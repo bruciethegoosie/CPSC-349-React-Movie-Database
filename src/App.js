@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "./App.css";
 import MovieCard from "./MovieCard";
 
@@ -11,11 +11,7 @@ function App() {
   const [typedSearch, setTypedSearch] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
 
-  useEffect(() => {
-    loadFilms(activePage);
-  }, [activePage, typedSearch]);
-
-  async function loadFilms(pageNumber) {
+  const loadFilms = useCallback(async (pageNumber) => {
     let requestUrl;
 
     if (typedSearch === "") {
@@ -47,7 +43,11 @@ function App() {
 
     setFilmResults(movies);
     setMaxPages(apiData.total_pages || 0);
-  }
+  }, [typedSearch, selectedSort]);
+
+  useEffect(() => {
+    loadFilms(activePage);
+  }, [activePage, loadFilms]);
 
   function handleNext() {
     if (activePage < maxPages) {
@@ -67,28 +67,7 @@ function App() {
   }
 
   function handleSort(event) {
-    const sortValue = event.target.value;
-    setSelectedSort(sortValue);
-
-    let sortedMovies = [...filmResults];
-
-    if (sortValue === "Release_Desc") {
-      sortedMovies.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-    }
-
-    if (sortValue === "Release_Asc") {
-      sortedMovies.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
-    }
-
-    if (sortValue === "Rating_Desc") {
-      sortedMovies.sort((a, b) => b.vote_average - a.vote_average);
-    }
-
-    if (sortValue === "Rating_Asc") {
-      sortedMovies.sort((a, b) => a.vote_average - b.vote_average);
-    }
-
-    setFilmResults(sortedMovies);
+    setSelectedSort(event.target.value);
   }
 
   return (
